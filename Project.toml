@@ -3,6 +3,11 @@ uuid = "47f98b48-5494-4ed9-8bfc-2c36e4c9fab2"
 authors = ["Éric Thiébaut <eric.thiebaut@univ-lyon1.fr> and contributors"]
 version = "0.1.1"
 
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+MayOptimize = "049513e6-5a5e-4281-9d48-334ebac8954e"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
 [compat]
 julia = "1"
 
