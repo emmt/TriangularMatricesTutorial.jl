@@ -81,13 +81,17 @@ brief(::typeof(adjoint),   args...) = "adjoint($(brief(args...)))"
         Sb_cpy = copy(Sb)
 
         # Test out-of-place operations.
-        @test lmul(S,b) == Sb
+        @test lmul(                  S,b) == Sb
+        @test b == b_cpy
+        @test lmul(Debug,            S,b) == Sb
         @test b == b_cpy
         @test lmul(RowWise(Debug),   S,b) == Sb
         @test b == b_cpy
         @test lmul(ColumnWise(Debug),S,b) == Sb
         @test b == b_cpy
-        @test ldiv(S,Sb) ≈ b
+        @test ldiv(                  S,Sb) ≈ b
+        @test Sb == Sb_cpy
+        @test ldiv(Debug,            S,Sb) ≈ b
         @test Sb == Sb_cpy
         @test ldiv(RowWise(Debug),   S,Sb) ≈ b
         @test Sb == Sb_cpy
