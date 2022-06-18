@@ -7,15 +7,15 @@ export
     Vectorize,
 
     # Re-exports from LinearAlgebra:
-    AbstractTriangular,
-    LowerTriangular,
-    UpperTriangular,
-    UnitLowerTriangular,
-    UnitUpperTriangular,
     lmul!,
     ldiv!,
 
     # Exports from this package:
+    TriangularMatrix,
+    LowerTriangularMatrix,
+    UpperTriangularMatrix,
+    UnitLowerTriangularMatrix,
+    UnitUpperTriangularMatrix,
     RowWise,
     ColumnWise,
     lmul,

@@ -45,15 +45,17 @@ function lmul_size(dst::AbstractVector, A::AbstractMatrix, b::AbstractVector)
 end
 
 """
-    lmul!(opt, A::AbstractTriangular, b) -> b
+    lmul!(opt, A::TriangularMatrix, b) -> b
 
 overwrites `b` with the result of the left-multiplication `A*b`.  Argument
 `opt` is to select the optimization level for loops and/or a specific algorithm
 to perform the operation (see [`RowWise`](@ref) or [`ColumnWise`](@ref)).
 
 """
-lmul!(opt::Union{Optimization,Algorithm}, A::AbstractTriangular, b) =
-    lmul!(opt, b, A, b)
+function lmul!(opt::Union{Optimization,Algorithm},
+               A::TriangularMatrix, b::AbstractVector)
+    return lmul!(opt, b, A, b)
+end
 
 """
     lmul!(opt, dst, A, b) -> dst
@@ -80,8 +82,8 @@ end
 # - Efficient for row-major storage order.
 # - Can be naturally applied in-place.
 function lmul!(::RowWise{opt}, dst::AbstractVector,
-               A::LowerTriangular, b::AbstractVector) where {opt}
-    L = parent(A) # strip decoration to avoid indexing overheads
+               A::LowerTriangularMatrix, b::AbstractVector) where {opt}
+    L = strip_triangular(A) # strip annotation to avoid indexing overheads
     m, n = lmul_size(dst, L, b)
     T = promote_eltype(L, b)
     @maybe_inbounds opt for i in reverse(1:n)
@@ -100,8 +102,8 @@ end
 # - Efficient for row-major storage order.
 # - Can be naturally applied in-place.
 function lmul!(::RowWise{opt}, dst::AbstractVector,
-               A::UpperTriangular, b::AbstractVector) where {opt}
-    U = parent(A) # strip decoration to avoid indexing overheads
+               A::UpperTriangularMatrix, b::AbstractVector) where {opt}
+    U = strip_triangular(A) # strip annotation to avoid indexing overheads
     m, n = lmul_size(dst, U, b)
     T = promote_eltype(U, b)
     @maybe_inbounds opt for i in 1:n
@@ -117,7 +119,7 @@ end
 # The column-wise left-multiplication by a triangular matrix is intrinsically
 # an in-place operation.
 function lmul!(alg::ColumnWise, dst::AbstractVector,
-               A::AbstractTriangular, b::AbstractVector)
+               A::TriangularMatrix, b::AbstractVector)
     return lmul!(alg, A, copy!(dst, b))
 end
 
@@ -127,8 +129,8 @@ end
 # - Efficient for column-major order.
 # - Intrinsically in-place algorithm.
 function lmul!(::ColumnWise{opt},
-               A::LowerTriangular, b::AbstractVector) where {opt}
-    L = parent(A) # strip decoration to avoid indexing overheads
+               A::LowerTriangularMatrix, b::AbstractVector) where {opt}
+    L = strip_triangular(A) # strip annotation to avoid indexing overheads
     m, n = lmul_size(L, b)
     T = promote_eltype(L, b)
     @maybe_inbounds opt for j in reverse(1:n)
@@ -149,8 +151,8 @@ end
 # - Efficient for column-major order.
 # - Intrinsically in-place algorithm.
 function lmul!(::ColumnWise{opt},
-               A::UpperTriangular, b::AbstractVector) where {opt}
-    U = parent(A) # strip decoration to avoid indexing overheads
+               A::UpperTriangularMatrix, b::AbstractVector) where {opt}
+    U = strip_triangular(A) # strip annotation to avoid indexing overheads
     m, n = lmul_size(U, b)
     T = promote_eltype(U, b)
     @maybe_inbounds opt for j in 1:n

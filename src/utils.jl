@@ -5,6 +5,74 @@ const BAD_INPUT_SIZE = DimensionMismatch("input array has incompatible size")
 const HAVE_OFFSET_AXES = ArgumentError("array(s) have offset axes")
 
 """
+    TriangularMatrix
+
+is the union of types of triangular matrices.  Diagonal matrices are considered
+as a different kind of matrices (because they wrap a vector).
+
+"""
+const TriangularMatrix = Union{AbstractTriangular,
+                               Transpose{<:Any,<:AbstractTriangular},
+                               Adjoint{<:Any,<:AbstractTriangular}}
+
+"""
+    LowerTriangularMatrix
+
+is the union of types of lower triangular matrices.  Unit lower triangular
+matrices and diagonal matrices are considered as different kinds of matrices.
+
+"""
+const LowerTriangularMatrix = Union{LowerTriangular,
+                                    Transpose{<:Any,<:UpperTriangular},
+                                    Adjoint{<:Any,<:UpperTriangular}}
+
+"""
+    UpperTriangularMatrix
+
+is the union of types of upper triangular matrices.  Unit upper triangular
+matrices and diagonal matrices are considered as different kinds of matrices.
+
+"""
+const UpperTriangularMatrix = Union{UpperTriangular,
+                                    Transpose{<:Any,<:LowerTriangular},
+                                    Adjoint{<:Any,<:LowerTriangular}}
+
+"""
+    UnitLowerTriangularMatrix
+
+is the union of types of unit lower triangular matrices.  Lower triangular
+matrices and diagonal matrices are considered as different kinds of matrices.
+
+"""
+const UnitLowerTriangularMatrix = Union{UnitLowerTriangular,
+                                        Transpose{<:Any,<:UnitUpperTriangular},
+                                        Adjoint{<:Any,<:UnitUpperTriangular}}
+
+"""
+    UnitUpperTriangularMatrix
+
+is the union of types of unit upper triangular matrices.  Upper triangular
+matrices and diagonal matrices are considered as different kinds of matrices.
+
+"""
+const UnitUpperTriangularMatrix = Union{UnitUpperTriangular,
+                                        Transpose{<:Any,<:UnitLowerTriangular},
+                                        Adjoint{<:Any,<:UnitLowerTriangular}}
+
+"""
+    strip_triangular(A)
+
+yields matrix `A` without its triangular annotation.
+
+"""
+strip_triangular(A::AbstractMatrix) = A
+strip_triangular(A::AbstractTriangular) = parent(A)
+strip_triangular(A::Adjoint{<:Any,<:AbstractTriangular}) =
+    adjoint(strip_triangular(parent(A)))
+strip_triangular(A::Transpose{<:Any,<:AbstractTriangular}) =
+    transpose(strip_triangular(parent(A)))
+
+"""
     Optimization
 
 is the union of types acceptable for building an algorithm object.
@@ -53,7 +121,7 @@ yields whether `A` seems to be stored in column-major order.
 
 """
 is_column_major(A::AbstractMatrix) = (stride(A,1) ≤ stride(A,2))
-is_column_major(A::AbstractTriangular) = is_column_major(parent(A))
+is_column_major(A::TriangularMatrix) = is_column_major(strip_triangular(A))
 is_column_major(A::Adjoint) = ! is_column_major(parent(A))
 is_column_major(A::Transpose) = ! is_column_major(parent(A))
 

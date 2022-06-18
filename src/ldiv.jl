@@ -47,15 +47,17 @@ function ldiv_size(dst::AbstractVector, A::AbstractMatrix, b::AbstractVector)
 end
 
 """
-    ldiv!(opt, A::AbstractTriangular, b) -> b
+    ldiv!(opt, A::TriangularMatrix, b) -> b
 
 overwrites `b` with the result of the left-division `A\b`.  Argument `opt` is
 to select the optimization level for loops and/or a specific algorithm to
 perform the operation (see [`RowWise`](@ref) or [`ColumnWise`](@ref)).
 
 """
-ldiv!(opt::Union{Optimization,Algorithm}, A::AbstractTriangular, b) =
-    ldiv!(opt, b, A, b)
+function ldiv!(opt::Union{Optimization,Algorithm},
+               A::TriangularMatrix, b::AbstractVector)
+    return ldiv!(opt, b, A, b)
+end
 
 """
     ldiv!(opt, dst, A, b) -> dst
@@ -82,8 +84,8 @@ end
 # - Efficient for row-major storage order.
 # - Can be naturally applied in-place.
 function ldiv!(::RowWise{opt}, dst::AbstractVector,
-               A::LowerTriangular, b::AbstractVector) where {opt}
-    L = parent(A) # strip decoration to avoid indexing overheads
+               A::LowerTriangularMatrix, b::AbstractVector) where {opt}
+    L = strip_triangular(A) # strip annotation to avoid indexing overheads
     n = ldiv_size(dst, L, b)
     T = promote_eltype(L, b)
     @maybe_inbounds opt for i in 1:n
@@ -102,8 +104,8 @@ end
 # - Efficient for row-major storage order.
 # - Can be naturally applied in-place.
 function ldiv!(::RowWise{opt}, dst::AbstractVector,
-               A::UpperTriangular, b::AbstractVector) where {opt}
-    U = parent(A) # strip decoration to avoid indexing overheads
+               A::UpperTriangularMatrix, b::AbstractVector) where {opt}
+    U = strip_triangular(A) # strip annotation to avoid indexing overheads
     n = ldiv_size(dst, U, b)
     T = promote_eltype(U, b)
     @maybe_inbounds opt for i in reverse(1:n)
@@ -119,7 +121,7 @@ end
 # The column-wise left-division by a triangular matrix is intrinsically
 # an in-place operation.
 function ldiv!(alg::ColumnWise, dst::AbstractVector,
-               A::AbstractTriangular, b::AbstractVector)
+               A::TriangularMatrix, b::AbstractVector)
     return ldiv!(alg, A, copy!(dst, b))
 end
 
@@ -129,8 +131,8 @@ end
 # - Efficient for column-major order.
 # - Intrinsically in-place algorithm.
 function ldiv!(::ColumnWise{opt},
-               A::LowerTriangular, b::AbstractVector) where {opt}
-    L = parent(A) # strip decoration to avoid indexing overheads
+               A::LowerTriangularMatrix, b::AbstractVector) where {opt}
+    L = strip_triangular(A) # strip annotation to avoid indexing overheads
     n = ldiv_size(L, b)
     @maybe_inbounds opt for j in 1:n
         b_j = b[j]/L[j,j]
@@ -150,8 +152,8 @@ end
 # - Efficient for column-major order.
 # - Intrinsically in-place algorithm.
 function ldiv!(::ColumnWise{opt},
-               A::UpperTriangular, b::AbstractVector) where {opt}
-    U = parent(A) # strip decoration to avoid indexing overheads
+               A::UpperTriangularMatrix, b::AbstractVector) where {opt}
+    U = strip_triangular(A) # strip annotation to avoid indexing overheads
     n = ldiv_size(U, b)
     @maybe_inbounds opt for j in reverse(1:n)
         b_j = b[j]/U[j,j]
