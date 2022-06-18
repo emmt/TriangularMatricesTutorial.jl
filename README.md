@@ -89,19 +89,36 @@ in-place, overwriting `b`.  Argument `opt` is either an optimization level
 `ColumnWise`.  This argument is required to avoid type-piracy.  If you do not
 specify it, you will be calling the methods implemented by Julia.
 
-The following table summarize some results for `S` lower triangular of size
+The following table summarizes some results for `L` lower triangular of size
 `n×n` with for `n=100` and elements of type `T=Float64` (the number of
 operations is `n²` for multiplying by a triangular matrix, `2n²-n` for a full
 square matrix).
 
-| Code                                                       | Time     | Power       |
-|:-----------------------------------------------------------|:---------|:------------|
-| `@btime lmul!($(RowWise(Debug)),$dst,$(S),$b);`            | 3.369 μs | 2.97 Gflops |
-| `@btime lmul!($(RowWise(InBounds)),$dst,$(S),$b);`         | 2.783 μs | 3.59 Gflops |
-| `@btime lmul!($(RowWise(Vectorize)),$dst,$(S),$b);`        | 4.394 μs | 2.28 Gflops |
-| `@btime lmul!($(ColumnWiseWise(Debug)),$dst,$(S),$b);`     | 2.895 μs | 3.45 Gflops |
-| `@btime lmul!($(ColumnWiseWise(InBounds)),$dst,$(S),$b);`  | 1.338 μs | 7.47 Gflops |
-| `@btime lmul!($(ColumnWiseWise(Vectorize)),$dst,$(S),$b);` | 1.303 μs | 7.67 Gflops |
+| Code                                                     | Time     | Power       |
+|:---------------------------------------------------------|:---------|:------------|
+| `@btime lmul!($(RowWise(Debug)),$dst,$L,$b);`            | 3.369 μs | 2.97 Gflops |
+| `@btime lmul!($(RowWise(InBounds)),$dst,$L,$b);`         | 2.783 μs | 3.59 Gflops |
+| `@btime lmul!($(RowWise(Vectorize)),$dst,$L,$b);`        | 4.394 μs | 2.28 Gflops |
+| `@btime lmul!($(ColumnWiseWise(Debug)),$dst,$L,$b);`     | 2.895 μs | 3.45 Gflops |
+| `@btime lmul!($(ColumnWiseWise(InBounds)),$dst,$L,$b);`  | 1.338 μs | 7.47 Gflops |
+| `@btime lmul!($(ColumnWiseWise(Vectorize)),$dst,$L,$b);` | 1.303 μs | 7.67 Gflops |
+
+For the left-division:
+
+| Code                                                     | Time     | Power       |
+|:---------------------------------------------------------|:---------|:------------|
+| `@btime ldiv!($dst,$L,$b);`                              | 1.596 μs | 6.27 Gflops |
+| `@btime ldiv!($(RowWise(Debug)),$dst,$L,$b);`            | 3.290 μs | 3.04 Gflops |
+| `@btime ldiv!($(RowWise(InBounds)),$dst,$L,$b);`         | 2.832 μs | 3.53 Gflops |
+| `@btime ldiv!($(RowWise(Vectorize)),$dst,$L,$b);`        | 3.954 μs | 2.53 Gflops |
+| `@btime ldiv!($(ColumnWiseWise(Debug)),$dst,$L,$b);`     | 3.692 μs | 2.71 Gflops |
+| `@btime ldiv!($(ColumnWiseWise(InBounds)),$dst,$L,$b);`  | 1.308 μs | 7.65 Gflops |
+| `@btime ldiv!($(ColumnWiseWise(Vectorize)),$dst,$L,$b);` | 1.411 μs | 7.09 Gflops |
+
+The first line is using the method in `LinearAlgebra` (based on BLAS) which is
+about 20% slower than the best method (here `ColumnWiseWise(InBounds)`).  Not
+too bad for pure Julia code.  Note that BLAS will win for large matrix
+(typically for `n` larger than a few hundreds).
 
 
 ## Implementation notes
@@ -111,15 +128,19 @@ types (based on `TriangularMatricesTutorial.Algorithm`) to avoid type-piracy.
 
 Julia annotates matrix for lazy transpose and adjoint and to indicate specific
 matrix structure (`LowerTriangular`, `UnitLowerTriangular`, etc.).  The
-triangle matrix annotation is always kept on top of the other annotations but
-it has some overheads in indexing operations (to ensure that the results of the
-`getindex` and `setindex!` calls are consistent with the structure of the
-matrix).  To avoid these overheads, we unveil the parent matrix of triangular
-matrices and account for the specific structure by restricting the indices
-ised.  Adjoint and transpose are handled without penalty so this is left
-unchanged (it reduces a lot the number of algorithms to code).
+triangle matrix annotation has some overheads in indexing operations (to ensure
+that the results of the `getindex` and `setindex!` calls are consistent with
+the structure of the matrix).  To avoid these overheads, we unveil the parent
+matrix of triangular matrices and account for the specific structure by
+restricting the indices ised.  Adjoint and transpose are handled without
+penalty so this is left unchanged (it reduces a lot the number of algorithms to
+code).
 
-In spite of this, implemented algorithms remain quite readable and simple abd
+Since Julia 1.6, the triangular annotation is always kept on top of the other
+annotations so unveilling it is easy but this has to be explicitely done for
+other.
+
+In spite of this, implemented algorithms remain quite readable and simple and
 yet efficient.
 
 ## Installation
