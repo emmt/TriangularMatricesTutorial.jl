@@ -1,18 +1,22 @@
-# TriangularMatricesTutorial [![Build Status](https://github.com/emmt/TriangularMatricesTutorial.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/emmt/TriangularMatricesTutorial.jl/actions/workflows/CI.yml?query=branch%3Amain) [![Build Status](https://ci.appveyor.com/api/projects/status/github/emmt/TriangularMatricesTutorial.jl?svg=true)](https://ci.appveyor.com/project/emmt/TriangularMatricesTutorial-jl) [![Coverage](https://codecov.io/gh/emmt/TriangularMatricesTutorial.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/emmt/TriangularMatricesTutorial.jl)
+# TriangularMatricesTutorial
+
+[![Build Status](https://github.com/emmt/TriangularMatricesTutorial.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/emmt/TriangularMatricesTutorial.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/emmt/TriangularMatricesTutorial.jl?svg=true)](https://ci.appveyor.com/project/emmt/TriangularMatricesTutorial-jl)
+[![Coverage](https://codecov.io/gh/emmt/TriangularMatricesTutorial.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/emmt/TriangularMatricesTutorial.jl)
 
 This repository is to experiment algorithms involving triangular matrices.  The
-main objective is to provide reference algorithms that can be resonnably fast
-and yet whose code remains readable.  In some sense, this shows how Julia can
-be good at helping you to write efficient code that is almost as simple as its
-mathematical counterpart.  We encourage users to have a look at
+main objective is to provide reference algorithms that can be fast and yet
+whose code remains readable.  In some sense, this shows how Julia can be good
+at helping you to write efficient code that is almost as simple as its
+mathematical counterpart.  You are encouraged to have a look at
 [`src/lmul.jl`](src/lmul.jl) which implements left-multiplication and
 [`src/ldiv.jl`](src/ldiv.jl) which implements left-division by triangular
 matrices.
 
 The following is provided:
 
-- In-place row-wise and column-wise left-multiplication (`lmul` and `lmul!`
-  methods) and left-division (`ldiv` and `ldiv!` methods) of a vector by a
+- In-place row-wise and column-wise left-multiplication (by `lmul` and `lmul!`
+  methods) and left-division (by `ldiv` and `ldiv!` methods) of a vector by a
   triangular matrix, by its adjoint, or by its transpose.
 
 This package is largely a work in progress, and we consider implementing the
@@ -21,8 +25,6 @@ following things:
 - Algorithms for the Cholesky decomposition.
 
 - Linear least-squares.
-
-- Sparse Cholesky factors with optional permutation.
 
 
 ## Usage
