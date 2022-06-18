@@ -1,11 +1,17 @@
 module TestingTriangularMatricesTutorial
 
 using TriangularMatricesTutorial
-using TriangularMatricesTutorial: strip_triangular
+using TriangularMatricesTutorial:
+    strip_triangular, is_row_major, is_column_major, copy!
+
 using Test
+
 using MayOptimize
+
 using LinearAlgebra
 using LinearAlgebra: AbstractTriangular
+
+struct CustomOptimLevel <: OptimLevel end
 
 # Narrow is used to reduce integer range for generating small random integers
 # that can be converted to a widen type for exact calculations.
@@ -33,7 +39,26 @@ brief(::typeof(adjoint),   args...) = "adjoint($(brief(args...)))"
     TYPES = (Float64, Complex{Float64})
     STRUCTS = (LowerTriangular, UpperTriangular)
     FUNCS = (identity, transpose, adjoint)
+
     let A = [1 2; 3 4]
+        @testset "Utilities" begin
+            # Ordinary matrices are stroed in column-major order in Julia.
+            @test is_column_major(A) == true
+            @test is_column_major(adjoint(A)) == false
+            @test is_column_major(transpose(A)) == false
+            @test is_row_major(A) == false
+            @test is_row_major(adjoint(A)) == true
+            @test is_row_major(transpose(A)) == true
+            @test RowWise(CustomOptimLevel) === RowWise{CustomOptimLevel}()
+            @test RowWise(CustomOptimLevel()) === RowWise{CustomOptimLevel}()
+            @test ColumnWise(CustomOptimLevel) === ColumnWise{CustomOptimLevel}()
+            @test ColumnWise(CustomOptimLevel()) === ColumnWise{CustomOptimLevel}()
+            let B = similar(A)
+                @test copy!(B,A) === B
+                @test A == B
+                @test copy!(B,B) === B
+            end
+        end
         @testset "Type aliases for S = $(brief(s))($(brief(f,"A")))" for f in FUNCS, s in STRUCTS
             let S = s(f(A))
                 @test isa(S,            AbstractMatrix)
